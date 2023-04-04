@@ -17,8 +17,8 @@ class MarcaResource extends JsonResource
         //Mantido para documentação
         //return parent::toArray($request);
         return [
-            'id' => $this->pkcategoria,
-            'nome_da_categoria' => $this->nomedacategoria
+            'id' => $this->pkmarca,
+            'nome_da_marca' => $this->nomedamarca
         ];
     }
 }
