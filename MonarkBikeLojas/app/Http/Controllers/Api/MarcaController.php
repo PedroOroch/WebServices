@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Marcas;
+use App\Models\Marca;
 use Illuminate\Http\Request;
 use App\Http\Resources\MarcaResource;
 use App\Http\Requests\StoreMarcaRequest;
@@ -15,7 +15,7 @@ class MarcaController extends Controller
      */
     public function index()
     {
-        $marcas = Marcas::all();
+        $marcas = Marca::all();
 
         return response() -> json([
             'status' => 200,
@@ -38,7 +38,7 @@ class MarcaController extends Controller
     public function store(StoreMarcaRequest $request)
     {
         //cria o objeto
-        $marca = new Marcas();
+        $marca = new Marca();
 
         //Transfere os valores
         $marca->nomedamarca = $request->nome_da_marca;
@@ -57,7 +57,7 @@ class MarcaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Marcas $marcas)
+    public function show(Marca $marca)
     {
         //
     }
@@ -65,7 +65,7 @@ class MarcaController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Marcas $marcas)
+    public function edit(Marca $marca)
     {
         //
     }
@@ -75,7 +75,7 @@ class MarcaController extends Controller
      */
     public function update(StoreMarcaRequest $request, Marcas $marca)
     {
-        $marca = Marcas::find($marca->pkmarca);
+        $marca = Marca::find($marca->pkmarca);
         $marca->nomedamarca = $request->nome_da_marca;
         $marca->update();
 
@@ -90,7 +90,7 @@ class MarcaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Marcas $marca)
+    public function destroy(Marca $marca)
     {
         $marca->delete();
 

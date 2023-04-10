@@ -7,15 +7,28 @@ use App\Models\Categoria;
 use Illuminate\Http\Request;
 use App\Http\Resources\CategoriaResource;
 use App\Http\Requests\StoreCategoriaRequest;
+use Illuminate\Support\Str;
 
 class CategoriaController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categorias = Categoria::all();
+        // $categorias = Categoria::all();
+
+        //Captura a coluna para ordenacao
+        $sortParameter = $request->input('ordenacao', 'nome_da_categoria');
+        $sortDirection = Str::startsWith($sortParameter, '-') ? 'desc':'asc';
+        $sortColumn = ltrim($sortParameter, '-');
+
+        // Determina se faz a query ordenada ou aplica o default
+        if($sortColumn == 'nome_da_categoria') {
+            $categorias = Categoria::orderBy('nomedacategoria', $sortDirection)->get();
+        } else {
+            $categoria = Categoria::all();
+        }
 
         return response() -> json([
             'status' => 200,
