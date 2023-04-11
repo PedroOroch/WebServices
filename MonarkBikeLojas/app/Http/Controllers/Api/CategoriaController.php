@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use App\Http\Resources\CategoriaResource;
 use App\Http\Requests\StoreCategoriaRequest;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use \Illuminate\Validation\ValidationException;
+use \Illuminate\Support\Facades\Validator;
 
 class CategoriaController extends Controller
 {
@@ -70,9 +73,68 @@ class CategoriaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Categoria $categoria)
+    public function show($categoriaid)
     {
-        //
+        /**
+         * Validação da entrada para ter certeza que o  valor é numérico
+         */
+        try {
+            $validator = Validator::make(['id' => $categoriaid], [
+                'id' => 'integer'
+            ]);
+
+            if($validator->fails()) {
+                throw ValidationException::withMessages(['id' => 'O campo Id deve ser numérico']);
+            }
+            /**
+             * Continua o fluxo para execução
+             */
+    
+             $categoria = Categoria::findorFail($categoriaid);
+    
+             return response() -> json([
+                'status' => 200,
+                'mensagem' => 'Categoria',
+                'categoria' => new CategoriaResource($categoria)
+             ]);
+        } catch (\Exception $ex) {
+            //throw $th;
+
+            /**
+             * Tratamento das exceções levantadas
+             */
+
+            $class = get_class($ex);//Pega a classe da exceção
+
+            switch($class){
+                case ModelNotFoundException::class: //Caso não exista o id na base
+                    return response()-> json ([
+                        'status' => 404,
+                        'mensagem' => 'Categoria não encontrada',
+                        'categoria' => []
+                    ], 404);
+                    break;
+                case \Illuminate\Validation\ValidationException::class: //Caso não exista o id na base
+                    return response()-> json ([
+                            'status' => 406,
+                            'mensagem' => $ex->getMessage(),
+                            'categoria' => []
+                    ], 404);
+                    break;
+                default: //Caso não exista o id na base
+                    return response()-> json ([
+                            'status' => 500,
+                            'mensagem' => 'ERRO INTERNO',
+                            'categoria' => []
+                    ], 404);
+                    break;
+            }
+        }
+        $validator = Validator::make(['id' => $categoriaid], [
+            'id' => 'integer'
+        ]);
+        //Caso não seja válido, levantar exceção
+       
     }
 
     /**
