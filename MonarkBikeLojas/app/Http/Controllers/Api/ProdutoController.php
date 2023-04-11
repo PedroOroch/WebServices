@@ -11,46 +11,55 @@ use App\Http\Resources\ProdutoResource;
 class ProdutoController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * trabalha com filtro de entrada
      */
     public function index(Request $request)
     {
-        //Captura a entrada a pagina
-        $input = $request->input('pagina');
+      //Query padrao
+      $query = Produto::with('categoria', 'marca');
 
-        //Monta a query com e sem paginacao
-        $query = Produto::with('categoria', 'marca');
+      //Obtem o parametro do filtro
+      $filterParameter = $request -> input ("filtro");
 
-        if($input) {
-            $page = $input;
-            $perPage = 10; //Registros por pagina
-            $query->offset(($page-1) * $perPage)->limit($perPage);
-            $produtos = $query->get( );
+      //Sf bao ha nenhum parametro
 
-            $recordsTotal = Produto::count();
-            $numbersOfPages = ceil($recordsTotal / $perPage);
-            $response = response() -> json([
+      if($filterParameter == null) {
+        //Retorna todos os produtos
+        $produtos = $query->get( );
+
+        $response = response( )->json([
+            'status' => 200,
+            'mensagem' => 'Lista de produtos retornada',
+            'produtos' => ProdutoResource::collection($produtos)
+        ], 200);
+      } else {
+        //Obtem o nome do filtro e o criterio
+        [$filterCriteria, $filterValue] = explode(":", $filterParameter);
+
+        //Se o filtro está adequado
+        if($filterCriteria == "nome_da_categoria") {
+            //Faz inner join para obter a categoria
+            $produtos = $query->join("categorias", "pkcategoria", "=", "fkcategoria")
+            ->where("nomedacategoria", "=", $filterValue)->get();
+
+            $response = response()->json([
                 'status' => 200,
-                'mensagem' => 'Lista de produtos retornada',
-                'produtos' => ProdutoResource::collection($produtos),
-                'meta' => [
-                    'total_numero_de_registros' => (string) $recordsTotal,
-                    'numero_de_registros_por_pagina' => (string) $perPage,
-                    'numero_de_paginas' => (string) $numbersOfPages,
-                    'pagina_atual' => $page
-                ]
-            ], 200);
-        } else {
-            $produtos = $query->get( );
-
-            $response = response() -> json ([
-                'status' => 200,
-                'mensagem' => 'Lista de produtos retornada',
+                'mensagem' => 'Lista de produtos retornada - Filtrada',
                 'produtos' => ProdutoResource::collection($produtos)
             ], 200);
+        } else {
+            //Usuario chamou filtro que não existe, então n]ao ha nada a retornar (Error 406 - Not Accepted)
+            $response = response()->json([
+                'status' => 406,
+                'mensagem' => 'Filtro não aceito',
+                'produtos' => []
+            ], 406);
         }
 
-        return $response;
+       
+      }
+
+      return $response;
     }
 
     /**
